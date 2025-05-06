@@ -4,113 +4,133 @@ using namespace std;
 class Node {
 public:
     int data;
-    Node *left, *right;
-    bool lthread, rthread;
+    Node* left;
+    Node* right;
+    bool lThread;
+    bool rThread;
 
     Node(int val) {
         data = val;
         left = right = NULL;
-        lthread = rthread = true;
+        lThread = rThread = false;
     }
 };
 
-class TBT {
-    Node *root;
+class PreorderTBT {
+private:
+    Node* root;
 
 public:
-    TBT() {
+    PreorderTBT() {
         root = NULL;
     }
 
-    void insert(int val) {
-        Node *newNode = new Node(val);
+    Node* insert(Node* root, int val) {
+        if (root == NULL)
+            return new Node(val);
 
-        if (root == NULL) {
-            root = newNode;
-            return;
-        }
+        if (val < root->data)
+            root->left = insert(root->left, val);
+        else if (val > root->data)
+            root->right = insert(root->right, val);
 
-        Node *curr = root, *parent = NULL;
-        while (curr != NULL) {
-            parent = curr;
-            if (val < curr->data) {
-                if (!curr->lthread)
-                    curr = curr->left;
-                else
-                    break;
-            } else if (val > curr->data) {
-                if (!curr->rthread)
-                    curr = curr->right;
-                else
-                    break;
-            } else {
-                cout << "Duplicate value not allowed!\n";
-                return;
-            }
-        }
-
-        if (val < parent->data) {
-            newNode->left = parent->left;
-            newNode->right = parent;
-            parent->lthread = false;
-            parent->left = newNode;
-        } else {
-            newNode->left = parent;
-            newNode->right = parent->right;
-            parent->rthread = false;
-            parent->right = newNode;
-        }
+        return root;
     }
 
-    void inorder() {
+    void insert(int val) {
+        root = insert(root, val);
+    }
+
+    void createPreorderThread(Node* node, Node*& prev) {
+        if (node == NULL)
+            return;
+
+        if (node->left == NULL) {
+            node->left = prev;
+            node->lThread = true;
+        }
+
+        if (prev != NULL && prev->right == NULL) {
+            prev->right = node;
+            prev->rThread = true;
+        }
+
+        prev = node;
+
+        if (node->lThread == false)
+            createPreorderThread(node->left, prev);
+
+        if (node->rThread == false)
+            createPreorderThread(node->right, prev);
+    }
+
+    void createPreorderThread() {
+        Node* prev = NULL;
+        createPreorderThread(root, prev);
+    }
+
+    void preorderTraversal() {
         if (root == NULL) {
-            cout << "Tree is empty.\n";
+            cout << "Tree is empty!" << endl;
             return;
         }
 
-        Node *curr = root;
-        // Go to the leftmost node
-        while (!curr->lthread)
-            curr = curr->left;
-
+        Node* curr = root;
+        cout << "Preorder Traversal using Threads: ";
         while (curr != NULL) {
             cout << curr->data << " ";
-            if (curr->rthread)
+
+            if (curr->lThread == false)
+                curr = curr->left;
+            else
                 curr = curr->right;
-            else {
-                curr = curr->right;
-                while (curr != NULL && !curr->lthread)
-                    curr = curr->left;
-            }
         }
         cout << endl;
     }
 };
 
 int main() {
-    TBT tree;
+    PreorderTBT tbt;
     int choice, val;
+    bool done = false;
 
-    do {
-        cout << "\n---MENU---\n1. Insert\n2. Display Inorder\n3. Exit\nEnter choice: ";
+    while (!done) {
+        cout << "\n--- Preorder Threaded Binary Tree Menu ---" << endl;
+        cout << "1. Insert Node" << endl;
+        cout << "2. Create Preorder Threads" << endl;
+        cout << "3. Preorder Traversal (Threaded)" << endl;
+        cout << "4. Exit" << endl;
+        cout << "Enter your choice: ";
         cin >> choice;
+
         switch (choice) {
             case 1:
-                cout << "Enter value: ";
+                cout << "Enter value to insert: ";
                 cin >> val;
-                tree.insert(val);
+                tbt.insert(val);
+                cout << "Node inserted." << endl;
                 break;
+
             case 2:
-                cout << "Inorder Traversal: ";
-                tree.inorder();
+                cout << "Creating Preorder Threads..." << endl;
+                tbt.createPreorderThread();
+                cout << "Threads created." << endl;
                 break;
+
             case 3:
-                cout << "Exiting...\n";
+                tbt.preorderTraversal();
                 break;
+
+            case 4:
+                cout << "Exiting program." << endl;
+                done = true;
+                break;
+
             default:
-                cout << "Invalid choice!\n";
+                cout << "Invalid choice. Try again." << endl;
         }
-    } while (choice != 3);
+    }
 
     return 0;
 }
+
