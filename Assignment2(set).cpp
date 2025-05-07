@@ -8,14 +8,26 @@ public:
         count = 0;
     }
 
+    // Insert elements with duplicate prevention
     void insert() {
         cout << "How many elements you want to insert?: ";
-        int t;
+        int t, element;
         cin >> t;
 
         for (int i = 0; i < t; i++) {
             cout << "Enter element " << (i + 1) << ": ";
-            cin >> a[count++];
+            cin >> element;
+
+            // Check for duplicates before inserting
+            if (search(element) != -1) {
+                cout << "Duplicate element. Not inserted.\n";
+            } else {
+                if (count >= 20) {
+                    cout << "Set is full! Cannot insert more elements.\n";
+                    break;
+                }
+                a[count++] = element;
+            }
         }
     }
 
